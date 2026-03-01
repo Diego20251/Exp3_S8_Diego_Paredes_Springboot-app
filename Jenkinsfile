@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3'   
-        jdk 'Java-17'     
+        maven 'Maven-3'
+        jdk 'Java-17'
     }
 
     stages {
@@ -26,6 +26,27 @@ pipeline {
             steps {
                 sh 'mvn package'
             }
+        }
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t springbootapp .'
+            }
+        }
+        stage('Docker Run') {
+            steps {
+                sh 'docker run -d -p 8080:8080 --name springbootapp \
+                -e SPRING_DATASOURCE_URL=jdbc:postgresql://database-1.cojihkoxovqd.us-east-1.rds.amazonaws.com:5432/springboot_db \
+                -e SPRING_DATASOURCE_USERNAME=postgres \
+                -e SPRING_DATASOURCE_PASSWORD=SpringPass2026! \
+                springbootapp'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finalizado. Limpieza de contenedores antiguos...'
+            sh 'docker ps -a'
         }
     }
 }
